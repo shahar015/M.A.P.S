@@ -51,7 +51,7 @@ function AppContent() {
 
   // Authenticated
   return (
-    <div className="min-h-screen flex flex-col bg-background-dark text-slate-100 font-display selection:bg-primary selection:text-black overflow-hidden relative">
+    <div className="h-dvh flex flex-col bg-background-dark text-slate-100 font-display selection:bg-primary selection:text-black overflow-hidden relative">
       <Header currentView={currentView} setCurrentView={setCurrentView} selectedScenario={selectedScenario} />
 
       {currentView === 'scenarios' && (

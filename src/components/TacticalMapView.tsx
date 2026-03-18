@@ -608,11 +608,7 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
       {/* Left Sidebar - Deployment Parameters (bottom sheet on mobile, side panel on desktop) */}
       <aside className={`pointer-events-auto fixed bottom-0 left-0 right-0 md:absolute md:bottom-auto md:right-auto md:left-0 md:top-0 z-[400] transform transition-transform duration-300 md:m-4 md:w-80 ${selectedPolygon ? 'translate-y-0 md:translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:-translate-x-[120%]'}`}>
         {selectedPolygon && (
-          <div className="bg-surface-glass backdrop-blur-xl border-t md:border border-primary/20 rounded-t-2xl md:rounded-xl p-4 md:p-5 shadow-2xl flex flex-col max-h-[65vh] md:max-h-[calc(100vh-6rem)] overflow-hidden">
-            {/* Mobile drag handle */}
-            <div className="md:hidden flex justify-center pb-2 shrink-0">
-              <div className="w-10 h-1 rounded-full bg-slate-600"></div>
-            </div>
+          <div className="bg-surface-glass backdrop-blur-xl border-t md:border border-primary/20 rounded-t-2xl md:rounded-xl p-4 md:p-5 shadow-2xl flex flex-col max-h-[65vh] md:max-h-[calc(100vh-6rem)] overflow-y-auto">
             <div className="flex justify-between items-center border-b border-primary/10 pb-2 mb-3 md:mb-4 shrink-0">
               <h2 className="text-primary text-xs font-bold tracking-[0.2em] uppercase">Deployment Parameters</h2>
               <button onClick={closeSidebar} className="text-slate-500 hover:text-white">
@@ -720,9 +716,9 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
               )}
             </button>
 
-            {/* Mobile inline coverage result — shown inside the bottom sheet */}
+            {/* Mobile inline coverage result + named units — shown inside the bottom sheet */}
             {showAnalytics && selectedPolygon && (
-              <div className="md:hidden mt-4 border-t border-primary/10 pt-4 shrink-0">
+              <div className="md:hidden mt-4 border-t border-primary/10 pt-4">
                 <div className="flex items-center gap-3">
                   <div className="relative size-14 shrink-0">
                     <svg className="size-full rotate-[-90deg]" viewBox="0 0 36 36">
@@ -745,6 +741,27 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
                     </div>
                   </div>
                 </div>
+                {/* Mobile named units list */}
+                {namedUnits.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-primary/10">
+                    <h4 className="text-white text-[10px] font-bold tracking-[0.2em] uppercase mb-2">Named Units</h4>
+                    <div className="flex flex-col gap-1.5 max-h-28 overflow-y-auto">
+                      {namedUnits.map((unit, i) => {
+                        const unitColor = getUnitColor(unit.type);
+                        return (
+                          <div key={i} className="flex items-center gap-2 bg-surface-dark/50 rounded p-1.5 text-[10px] border border-slate-700/30">
+                            <div style={{ color: unitColor }} className="shrink-0">
+                              {unit.type === 'sniper' ? <Crosshair size={12} /> : unit.type === 'rifle' ? <RifleIcon size={12} /> : <Shield size={12} />}
+                            </div>
+                            <span className="text-white font-medium truncate flex-1 min-w-0">{unit.name}</span>
+                            <span className="text-slate-500 capitalize shrink-0">{unit.type}</span>
+                            <span className="text-slate-400 font-mono shrink-0">{unit.azimuth}°</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
