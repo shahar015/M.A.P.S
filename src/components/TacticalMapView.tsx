@@ -173,52 +173,57 @@ function ZoomControls() {
 // --- Draggable bottom sheet for mobile ---
 function BottomSheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
   const sheetRef = useRef<HTMLDivElement>(null);
-  const dragState = useRef<{ startY: number; startTranslate: number } | null>(null);
-  const [translateY, setTranslateY] = useState(0);
+  const dragState = useRef<{ startY: number; currentY: number } | null>(null);
+  const [snapState, setSnapState] = useState<'open' | 'closed'>('open');
   const [isDragging, setIsDragging] = useState(false);
 
-  // Reset position when sheet opens
   useEffect(() => {
-    if (open) setTranslateY(0);
+    if (open) setSnapState('open');
   }, [open]);
 
   const onTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    dragState.current = { startY: touch.clientY, startTranslate: translateY };
+    const y = e.touches[0].clientY;
+    dragState.current = { startY: y, currentY: 0 };
     setIsDragging(true);
-  }, [translateY]);
+  }, []);
 
   const onTouchMove = useCallback((e: React.TouchEvent) => {
     if (!dragState.current) return;
-    const touch = e.touches[0];
-    const delta = touch.clientY - dragState.current.startY;
-    // Only allow dragging down (positive delta) or up to 0
-    setTranslateY(Math.max(0, dragState.current.startTranslate + delta));
+    e.preventDefault(); // Prevent pull-to-refresh
+    const delta = e.touches[0].clientY - dragState.current.startY;
+    const clamped = Math.max(0, delta);
+    dragState.current.currentY = clamped;
+    // Direct DOM manipulation for smooth 60fps drag (no React re-render)
+    if (sheetRef.current) {
+      sheetRef.current.style.transform = `translateY(${clamped}px)`;
+    }
   }, []);
 
   const onTouchEnd = useCallback(() => {
     if (!dragState.current) return;
+    const finalY = dragState.current.currentY;
     setIsDragging(false);
-    // If dragged down more than 100px, dismiss
-    if (translateY > 100) {
+    dragState.current = null;
+    if (finalY > 100) {
+      // Dismiss
+      if (sheetRef.current) sheetRef.current.style.transform = '';
+      setSnapState('closed');
       onClose();
-      setTranslateY(0);
     } else {
       // Snap back
-      setTranslateY(0);
+      if (sheetRef.current) sheetRef.current.style.transform = '';
     }
-    dragState.current = null;
-  }, [translateY, onClose]);
+  }, [onClose]);
 
   return (
     <div
       ref={sheetRef}
-      className={`md:hidden pointer-events-auto fixed bottom-0 left-0 right-0 z-[400] ${!isDragging ? 'transition-transform duration-300' : ''} ${open ? '' : 'translate-y-full'}`}
-      style={open ? { transform: `translateY(${translateY}px)` } : undefined}
+      className={`md:hidden pointer-events-auto fixed bottom-0 left-0 right-0 z-[400] ${!isDragging ? 'transition-transform duration-300' : ''} ${open && snapState === 'open' ? '' : 'translate-y-full'}`}
     >
-      {/* Drag handle */}
+      {/* Drag handle — touch-action:none prevents browser from intercepting */}
       <div
         className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+        style={{ touchAction: 'none' }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
