@@ -608,7 +608,7 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
       {/* Left Sidebar - Deployment Parameters (bottom sheet on mobile, side panel on desktop) */}
       <aside className={`pointer-events-auto fixed bottom-0 left-0 right-0 md:absolute md:bottom-auto md:right-auto md:left-0 md:top-0 z-[400] transform transition-transform duration-300 md:m-4 md:w-80 ${selectedPolygon ? 'translate-y-0 md:translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:-translate-x-[120%]'}`}>
         {selectedPolygon && (
-          <div className="bg-surface-glass backdrop-blur-xl border-t md:border border-primary/20 rounded-t-2xl md:rounded-xl p-4 md:p-5 shadow-2xl flex flex-col max-h-[55vh] md:max-h-[calc(100vh-6rem)] overflow-hidden">
+          <div className="bg-surface-glass backdrop-blur-xl border-t md:border border-primary/20 rounded-t-2xl md:rounded-xl p-4 md:p-5 shadow-2xl flex flex-col max-h-[65vh] md:max-h-[calc(100vh-6rem)] overflow-hidden">
             {/* Mobile drag handle */}
             <div className="md:hidden flex justify-center pb-2 shrink-0">
               <div className="w-10 h-1 rounded-full bg-slate-600"></div>
@@ -719,6 +719,34 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
                 </>
               )}
             </button>
+
+            {/* Mobile inline coverage result — shown inside the bottom sheet */}
+            {showAnalytics && selectedPolygon && (
+              <div className="md:hidden mt-4 border-t border-primary/10 pt-4 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="relative size-14 shrink-0">
+                    <svg className="size-full rotate-[-90deg]" viewBox="0 0 36 36">
+                      <path className="text-surface-dark" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3"></path>
+                      <path className="text-primary drop-shadow-[0_0_5px_rgba(13,242,13,0.8)]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray={`${selectedPolygon.coveragePercent}, 100`} strokeWidth="3"></path>
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-primary font-bold text-sm leading-none">{selectedPolygon.coveragePercent}%</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className="text-slate-300 text-xs font-medium">Coverage</span>
+                    <span className="text-slate-500 text-[10px] font-mono uppercase truncate">AOI: {selectedPolygon.name}</span>
+                    <div className="flex justify-between text-[10px] font-mono text-slate-400 mt-1">
+                      <span>DEPLOYED</span>
+                      <span className="text-white">{selectedPolygon.deployedUnits.length}/{(selectedPolygon.lastOptimizedParams?.snipers || 0) + (selectedPolygon.lastOptimizedParams?.rifles || 0) + (selectedPolygon.lastOptimizedParams?.shotguns || 0)}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-surface-dark rounded-full overflow-hidden mt-1">
+                      <div className="h-full bg-primary shadow-[0_0_10px_rgba(13,242,13,0.5)]" style={{ width: `${(() => { const t = (selectedPolygon.lastOptimizedParams?.snipers || 0) + (selectedPolygon.lastOptimizedParams?.rifles || 0) + (selectedPolygon.lastOptimizedParams?.shotguns || 0); return t > 0 ? (selectedPolygon.deployedUnits.length / t) * 100 : 0; })()}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </aside>
