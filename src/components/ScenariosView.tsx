@@ -50,12 +50,12 @@ export default function ScenariosView({ onOpenScenario, onNewScenario }: Scenari
   const [searchQuery, setSearchQuery] = useState('');
   const [scenarios, setScenarios] = useState(INITIAL_SCENARIOS);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  
+
   const [scenarioToDelete, setScenarioToDelete] = useState<string | null>(null);
   const [scenarioToEdit, setScenarioToEdit] = useState<any | null>(null);
 
-  const filteredScenarios = scenarios.filter(s => 
-    s.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredScenarios = scenarios.filter(s =>
+    s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.desc.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -93,17 +93,15 @@ export default function ScenariosView({ onOpenScenario, onNewScenario }: Scenari
   };
 
   return (
-    <main className="flex-1 px-6 py-8 w-full mx-auto flex flex-col gap-8 pb-12 overflow-y-auto bg-grid-pattern" onClick={() => setOpenMenuId(null)}>
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b border-surface-highlight">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary uppercase">Scenarios</h1>
-        </div>
-        <button 
+    <main className="flex-1 px-4 md:px-6 py-6 md:py-8 w-full mx-auto flex flex-col gap-5 md:gap-8 pb-20 md:pb-12 overflow-y-auto bg-grid-pattern" onClick={() => setOpenMenuId(null)}>
+      <div className="flex flex-row items-center justify-between gap-4 pb-4 border-b border-surface-highlight">
+        <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold tracking-tight text-primary uppercase">Scenarios</h1>
+        <button
           onClick={onNewScenario}
-          className="group flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary text-primary hover:text-black border border-primary font-bold py-3 px-6 rounded-sm transition-all shadow-[0_0_15px_rgba(13,242,13,0.15)] hover:shadow-[0_0_25px_rgba(13,242,13,0.4)] transform active:scale-95 uppercase tracking-wide"
+          className="group flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary text-primary hover:text-black border border-primary font-bold py-2 px-3 md:py-3 md:px-6 rounded-sm transition-all shadow-[0_0_15px_rgba(13,242,13,0.15)] hover:shadow-[0_0_25px_rgba(13,242,13,0.4)] transform active:scale-95 uppercase tracking-wide text-xs md:text-sm shrink-0"
         >
-          <Plus className="group-hover:rotate-90 transition-transform" />
-          <span>New Scenario</span>
+          <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+          <span className="hidden sm:inline">New Scenario</span>
         </button>
       </div>
 
@@ -112,9 +110,9 @@ export default function ScenariosView({ onOpenScenario, onNewScenario }: Scenari
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
             <Search size={20} />
           </div>
-          <input 
-            className="block w-full pl-10 pr-3 py-2.5 border border-surface-highlight rounded-sm leading-5 bg-surface-dark text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-all shadow-sm font-mono uppercase tracking-wide" 
-            placeholder="Search scenario..." 
+          <input
+            className="block w-full pl-10 pr-3 py-2.5 border border-surface-highlight rounded-sm leading-5 bg-surface-dark text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm transition-all shadow-sm font-mono uppercase tracking-wide"
+            placeholder="Search scenario..."
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -122,17 +120,69 @@ export default function ScenariosView({ onOpenScenario, onNewScenario }: Scenari
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {/* Mobile list layout */}
+      <div className="md:hidden flex flex-col gap-3">
         {filteredScenarios.map((scenario) => (
-          <div 
+          <div
+            key={scenario.id}
+            onClick={() => onOpenScenario(scenario.id)}
+            className="group relative flex items-center gap-3 p-3 bg-surface-dark border border-surface-highlight rounded-lg cursor-pointer hover:border-primary transition-all active:scale-[0.98]"
+          >
+            <div className="h-14 w-20 shrink-0 rounded overflow-hidden bg-black border border-surface-highlight">
+              <div
+                className="w-full h-full bg-cover bg-center map-preview-filter"
+                style={{ backgroundImage: `url("${scenario.image}")` }}
+              ></div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wide leading-tight truncate group-hover:text-primary transition-colors">{scenario.title}</h3>
+              <span className="text-[11px] font-mono text-primary tracking-widest">{scenario.code}</span>
+            </div>
+            <div className="relative shrink-0">
+              <button
+                className="text-slate-500 hover:text-primary transition-colors p-1 rounded hover:bg-surface-highlight"
+                onClick={(e) => toggleMenu(scenario.id, e)}
+              >
+                <MoreVertical size={18} />
+              </button>
+              {openMenuId === scenario.id && (
+                <div className="absolute right-0 mt-1 w-36 bg-surface-dark border border-surface-highlight rounded-md shadow-lg overflow-hidden z-40">
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-surface-highlight hover:text-white flex items-center gap-2"
+                    onClick={(e) => handleEditClick(scenario.id, e)}
+                  >
+                    <Edit size={14} /> Edit
+                  </button>
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2"
+                    onClick={(e) => handleDeleteClick(scenario.id, e)}
+                  >
+                    <Trash2 size={14} /> Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+        {filteredScenarios.length === 0 && (
+          <div className="py-12 text-center text-slate-500">
+            No scenarios found matching "{searchQuery}"
+          </div>
+        )}
+      </div>
+
+      {/* Desktop card grid */}
+      <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredScenarios.map((scenario) => (
+          <div
             key={scenario.id}
             onClick={() => onOpenScenario(scenario.id)}
             className="group relative flex flex-col bg-surface-dark border border-surface-highlight rounded-sm overflow-hidden hover:border-primary transition-all duration-300 shadow-sm hover:shadow-neon h-full cursor-pointer"
           >
             <div className="relative h-48 w-full overflow-hidden bg-black border-b border-surface-highlight group-hover:border-primary/50 transition-colors shrink-0">
               <div className="absolute inset-0 bg-[linear-gradient(transparent_2px,#000_2px),linear-gradient(90deg,transparent_2px,#000_2px)] bg-[size:20px_20px] opacity-20 z-20 pointer-events-none"></div>
-              <div 
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 map-preview-filter" 
+              <div
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 map-preview-filter"
                 style={{ backgroundImage: `url("${scenario.image}")` }}
               ></div>
               <div className="absolute bottom-3 right-3 z-20 flex gap-1">
@@ -141,22 +191,22 @@ export default function ScenariosView({ onOpenScenario, onNewScenario }: Scenari
             </div>
             <div className="flex flex-col p-4 gap-3 flex-1 relative bg-surface-dark">
               <div className="absolute top-4 right-4 z-30">
-                <button 
-                  className="text-slate-500 hover:text-primary transition-colors p-1 rounded hover:bg-surface-highlight" 
+                <button
+                  className="text-slate-500 hover:text-primary transition-colors p-1 rounded hover:bg-surface-highlight"
                   onClick={(e) => toggleMenu(scenario.id, e)}
                 >
                   <MoreVertical size={20} />
                 </button>
-                
+
                 {openMenuId === scenario.id && (
                   <div className="absolute right-0 mt-1 w-36 bg-surface-dark border border-surface-highlight rounded-md shadow-lg overflow-hidden z-40">
-                    <button 
+                    <button
                       className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-surface-highlight hover:text-white flex items-center gap-2"
                       onClick={(e) => handleEditClick(scenario.id, e)}
                     >
                       <Edit size={14} /> Edit
                     </button>
-                    <button 
+                    <button
                       className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2"
                       onClick={(e) => handleDeleteClick(scenario.id, e)}
                     >
@@ -183,7 +233,7 @@ export default function ScenariosView({ onOpenScenario, onNewScenario }: Scenari
       </div>
 
       {scenarioToDelete && (
-        <DeleteConfirmationModal 
+        <DeleteConfirmationModal
           scenarioName={scenarios.find(s => s.id === scenarioToDelete)?.title || ''}
           onClose={() => setScenarioToDelete(null)}
           onConfirm={confirmDelete}
@@ -191,7 +241,7 @@ export default function ScenariosView({ onOpenScenario, onNewScenario }: Scenari
       )}
 
       {scenarioToEdit && (
-        <EditScenarioModal 
+        <EditScenarioModal
           scenario={scenarioToEdit}
           onClose={() => setScenarioToEdit(null)}
           onSave={saveEdit}

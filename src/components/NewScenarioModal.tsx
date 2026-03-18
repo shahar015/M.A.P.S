@@ -69,7 +69,7 @@ export default function NewScenarioModal({ onClose }: NewScenarioModalProps) {
           </div>
         </div>
         
-        <div className="px-6 py-4 bg-surface-dark/60 border-t border-primary/20 flex items-center justify-between">
+        <div className="px-4 md:px-6 py-4 bg-surface-dark/60 border-t border-primary/20 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
           <button 
             onClick={onClose}
             className="group flex items-center gap-2 px-4 py-2 rounded text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium tracking-wide"

@@ -26,15 +26,15 @@ export default function LoginView({ onSwitchToSignup }: LoginViewProps) {
     <div className="min-h-screen flex flex-col items-center justify-center bg-background-dark bg-grid-pattern p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-4 mb-10">
+        <div className="flex items-center justify-center gap-3 md:gap-4 mb-8 md:mb-10">
           <div className="size-10 text-primary flex items-center justify-center border border-primary/50 rounded bg-primary/10 shadow-[0_0_15px_rgba(13,242,13,0.3)]">
             <Radar size={24} />
           </div>
           <div>
-            <h1 className="text-white text-2xl font-bold tracking-widest leading-none uppercase drop-shadow-[0_0_5px_rgba(13,242,13,0.5)]">
+            <h1 className="text-white text-xl sm:text-2xl font-bold tracking-widest leading-none uppercase drop-shadow-[0_0_5px_rgba(13,242,13,0.5)]">
               M.A.P.S. <span className="text-primary">Command</span>
             </h1>
-            <p className="text-xs text-primary/60 font-mono tracking-widest">TACTICAL PLANNING SYSTEM</p>
+            <p className="text-[10px] sm:text-xs text-primary/60 font-mono tracking-widest">TACTICAL PLANNING SYSTEM</p>
           </div>
         </div>
 
@@ -44,7 +44,7 @@ export default function LoginView({ onSwitchToSignup }: LoginViewProps) {
             <h2 className="text-white text-lg font-bold tracking-wide uppercase">Operator Sign In</h2>
           </div>
 
-          <div className="p-6 space-y-5">
+          <div className="p-4 md:p-6 space-y-5">
             <div className="relative group">
               <input
                 id="login-username"

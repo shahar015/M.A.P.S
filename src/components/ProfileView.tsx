@@ -49,10 +49,10 @@ export default function ProfileView({ onBack }: ProfileViewProps) {
   };
 
   return (
-    <main className="flex-1 px-6 py-8 w-full max-w-2xl mx-auto flex flex-col gap-8 overflow-y-auto bg-grid-pattern">
+    <main className="flex-1 px-4 md:px-6 py-6 md:py-8 w-full max-w-2xl mx-auto flex flex-col gap-6 md:gap-8 pb-20 md:pb-12 overflow-y-auto bg-grid-pattern">
       {/* Avatar + Username Header */}
       <div className="flex flex-col items-center gap-3 pb-6 border-b border-surface-highlight">
-        <div className="size-24 rounded-full bg-primary/20 border-2 border-primary text-primary flex items-center justify-center font-bold text-3xl shadow-[0_0_20px_rgba(13,242,13,0.2)]">
+        <div className="size-20 md:size-24 rounded-full bg-primary/20 border-2 border-primary text-primary flex items-center justify-center font-bold text-2xl md:text-3xl shadow-[0_0_20px_rgba(13,242,13,0.2)]">
           {initials}
         </div>
         <span className="text-primary font-mono tracking-widest text-sm uppercase">@{currentUser.username}</span>
@@ -64,8 +64,8 @@ export default function ProfileView({ onBack }: ProfileViewProps) {
           <h2 className="text-white text-lg font-bold tracking-wide uppercase">Profile Settings</h2>
         </div>
 
-        <div className="p-6 space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="p-4 md:p-6 space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="relative group">
               <input
                 id="profile-first"
@@ -160,7 +160,7 @@ export default function ProfileView({ onBack }: ProfileViewProps) {
           {saved && <p className="text-primary text-sm font-mono">Profile updated successfully</p>}
         </div>
 
-        <div className="px-6 py-4 bg-surface-dark/60 border-t border-primary/20 flex items-center justify-between">
+        <div className="px-4 md:px-6 py-4 bg-surface-dark/60 border-t border-primary/20 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
           <button
             onClick={onBack}
             className="group flex items-center gap-2 px-4 py-2 rounded text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm font-medium tracking-wide"

@@ -587,29 +587,33 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
             );
           })}
 
-          {/* Map Controls */}
-          <div className="absolute bottom-6 right-6 z-[400] flex flex-col gap-2">
+          {/* Map Controls — positioned above mobile bottom sheets */}
+          <div className="absolute bottom-20 right-3 md:bottom-6 md:right-6 z-[400] flex flex-col gap-2">
             <ZoomControls />
             <button
               onClick={startDrawing}
-              className={`w-12 h-12 mt-4 backdrop-blur border-2 rounded-lg flex items-center justify-center transition-all duration-300 shadow-lg ${
+              className={`w-10 h-10 md:w-12 md:h-12 mt-3 md:mt-4 backdrop-blur border-2 rounded-lg flex items-center justify-center transition-all duration-300 shadow-lg ${
                 isDrawing
                   ? 'bg-primary text-black border-primary shadow-[0_0_20px_rgba(13,242,13,0.6)] scale-110'
                   : 'bg-transparent border-primary text-primary hover:bg-primary/20 hover:shadow-[0_0_15px_rgba(13,242,13,0.3)]'
               }`}
               title={isDrawing ? "Drawing Mode Active" : "Draw Tactical Area"}
             >
-              <MapPin size={24} className={isDrawing ? "animate-pulse" : ""} />
+              <MapPin size={22} className={isDrawing ? "animate-pulse" : ""} />
             </button>
           </div>
         </MapContainer>
       </div>
 
-      {/* Left Sidebar - Deployment Parameters */}
-      <aside className={`pointer-events-auto absolute left-0 top-0 bottom-0 w-full md:w-80 m-4 z-[400] transform transition-transform duration-300 ${selectedPolygon ? 'translate-x-0' : '-translate-x-[120%]'}`}>
+      {/* Left Sidebar - Deployment Parameters (bottom sheet on mobile, side panel on desktop) */}
+      <aside className={`pointer-events-auto fixed bottom-0 left-0 right-0 md:absolute md:bottom-auto md:right-auto md:left-0 md:top-0 z-[400] transform transition-transform duration-300 md:m-4 md:w-80 ${selectedPolygon ? 'translate-y-0 md:translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:-translate-x-[120%]'}`}>
         {selectedPolygon && (
-          <div className="bg-surface-glass backdrop-blur-xl border border-primary/20 rounded-xl p-5 shadow-2xl flex flex-col max-h-[calc(100vh-6rem)] overflow-hidden">
-            <div className="flex justify-between items-center border-b border-primary/10 pb-2 mb-4 shrink-0">
+          <div className="bg-surface-glass backdrop-blur-xl border-t md:border border-primary/20 rounded-t-2xl md:rounded-xl p-4 md:p-5 shadow-2xl flex flex-col max-h-[55vh] md:max-h-[calc(100vh-6rem)] overflow-hidden">
+            {/* Mobile drag handle */}
+            <div className="md:hidden flex justify-center pb-2 shrink-0">
+              <div className="w-10 h-1 rounded-full bg-slate-600"></div>
+            </div>
+            <div className="flex justify-between items-center border-b border-primary/10 pb-2 mb-3 md:mb-4 shrink-0">
               <h2 className="text-primary text-xs font-bold tracking-[0.2em] uppercase">Deployment Parameters</h2>
               <button onClick={closeSidebar} className="text-slate-500 hover:text-white">
                 <X size={18} />
@@ -722,7 +726,7 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
       <div className="flex-1"></div>
 
       {/* Right Sidebar - Named Units Grid + Coverage Analytics */}
-      <aside className={`pointer-events-auto absolute right-0 top-0 bottom-0 w-full md:w-72 m-4 flex flex-col justify-end gap-3 self-end z-[400] transform transition-transform duration-500 ${showAnalytics ? 'translate-x-0' : 'translate-x-[120%]'}`}>
+      <aside className={`pointer-events-auto fixed bottom-0 left-0 right-0 md:absolute md:bottom-auto md:left-auto md:right-0 md:top-0 md:w-72 md:m-4 flex flex-col justify-end gap-3 z-[398] md:z-[400] transform transition-all duration-500 ${showAnalytics ? 'md:translate-x-0' : 'md:translate-x-[120%]'} ${showAnalytics && !selectedPolygon ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}`}>
         {/* Named Units Grid */}
         {namedUnits.length > 0 && (
           <div className="bg-surface-glass backdrop-blur-xl border border-primary/20 rounded-xl p-4 shadow-2xl">
