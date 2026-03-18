@@ -170,6 +170,66 @@ function ZoomControls() {
   );
 }
 
+// --- Draggable bottom sheet for mobile ---
+function BottomSheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const dragState = useRef<{ startY: number; startTranslate: number } | null>(null);
+  const [translateY, setTranslateY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Reset position when sheet opens
+  useEffect(() => {
+    if (open) setTranslateY(0);
+  }, [open]);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    dragState.current = { startY: touch.clientY, startTranslate: translateY };
+    setIsDragging(true);
+  }, [translateY]);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!dragState.current) return;
+    const touch = e.touches[0];
+    const delta = touch.clientY - dragState.current.startY;
+    // Only allow dragging down (positive delta) or up to 0
+    setTranslateY(Math.max(0, dragState.current.startTranslate + delta));
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    if (!dragState.current) return;
+    setIsDragging(false);
+    // If dragged down more than 100px, dismiss
+    if (translateY > 100) {
+      onClose();
+      setTranslateY(0);
+    } else {
+      // Snap back
+      setTranslateY(0);
+    }
+    dragState.current = null;
+  }, [translateY, onClose]);
+
+  return (
+    <div
+      ref={sheetRef}
+      className={`md:hidden pointer-events-auto fixed bottom-0 left-0 right-0 z-[400] ${!isDragging ? 'transition-transform duration-300' : ''} ${open ? '' : 'translate-y-full'}`}
+      style={open ? { transform: `translateY(${translateY}px)` } : undefined}
+    >
+      {/* Drag handle */}
+      <div
+        className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        <div className="w-10 h-1 rounded-full bg-slate-500"></div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 // --- Geo helpers ---
 
 function getDestinationPoint(lat: number, lng: number, distance: number, bearing: number): [number, number] {
@@ -605,11 +665,11 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
         </MapContainer>
       </div>
 
-      {/* Left Sidebar - Deployment Parameters (bottom sheet on mobile, side panel on desktop) */}
-      <aside className={`pointer-events-auto fixed bottom-0 left-0 right-0 md:absolute md:bottom-auto md:right-auto md:left-0 md:top-0 z-[400] transform transition-transform duration-300 md:m-4 md:w-80 ${selectedPolygon ? 'translate-y-0 md:translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:-translate-x-[120%]'}`}>
-        {selectedPolygon && (
-          <div className="bg-surface-glass backdrop-blur-xl border-t md:border border-primary/20 rounded-t-2xl md:rounded-xl p-4 md:p-5 shadow-2xl flex flex-col max-h-[65vh] md:max-h-[calc(100vh-6rem)] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-primary/10 pb-2 mb-3 md:mb-4 shrink-0">
+      {/* Mobile Bottom Sheet - Deployment Parameters */}
+      {selectedPolygon && (
+        <BottomSheet open={!!selectedPolygon} onClose={closeSidebar}>
+          <div className="bg-surface-glass backdrop-blur-xl border-t border-primary/20 rounded-t-2xl p-4 shadow-2xl flex flex-col max-h-[60vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-primary/10 pb-2 mb-3 shrink-0">
               <h2 className="text-primary text-xs font-bold tracking-[0.2em] uppercase">Deployment Parameters</h2>
               <button onClick={closeSidebar} className="text-slate-500 hover:text-white">
                 <X size={18} />
@@ -765,13 +825,83 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
               </div>
             )}
           </div>
-        )}
-      </aside>
+        </BottomSheet>
+      )}
+
+      {/* Desktop Side Panel - Deployment Parameters */}
+      {selectedPolygon && (
+        <aside className={`pointer-events-auto hidden md:block absolute left-0 top-0 bottom-0 w-80 m-4 z-[400] transform transition-transform duration-300 ${selectedPolygon ? 'translate-x-0' : '-translate-x-[120%]'}`}>
+          <div className="bg-surface-glass backdrop-blur-xl border border-primary/20 rounded-xl p-5 shadow-2xl flex flex-col max-h-[calc(100vh-6rem)] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-primary/10 pb-2 mb-4 shrink-0">
+              <h2 className="text-primary text-xs font-bold tracking-[0.2em] uppercase">Deployment Parameters</h2>
+              <button onClick={closeSidebar} className="text-slate-500 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="shrink-0 mb-4">
+              <input
+                type="text"
+                value={selectedPolygon.name}
+                onChange={(e) => updatePolygon(selectedPolygon.id, { name: e.target.value })}
+                className="w-full bg-primary/10 border border-primary/40 rounded-lg px-3 py-2 text-xs text-white placeholder-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/60"
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto min-h-0 mb-4">
+              <label className="text-xs text-slate-400 font-mono uppercase tracking-wider block mb-3">Unit Allocation</label>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between bg-surface-dark/50 rounded-lg p-2 pr-3 border border-slate-700/50">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-slate-800 p-2 rounded text-primary"><Crosshair size={20} /></div>
+                    <div className="flex flex-col"><span className="text-sm font-bold text-white">Snipers</span><span className="text-[10px] text-slate-500">Long Range</span></div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => updatePolygon(selectedPolygon.id, { snipers: Math.max(0, selectedPolygon.snipers - 1) })} className="size-6 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors"><Minus size={14} /></button>
+                    <span className="text-base font-mono font-bold w-4 text-center">{selectedPolygon.snipers}</span>
+                    <button onClick={() => updatePolygon(selectedPolygon.id, { snipers: selectedPolygon.snipers + 1 })} className="size-6 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors"><Plus size={14} /></button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between bg-surface-dark/50 rounded-lg p-2 pr-3 border border-slate-700/50">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-slate-800 p-2 rounded text-primary"><RifleIcon size={20} /></div>
+                    <div className="flex flex-col"><span className="text-sm font-bold text-white">Rifles</span><span className="text-[10px] text-slate-500">Mid Range</span></div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => updatePolygon(selectedPolygon.id, { rifles: Math.max(0, selectedPolygon.rifles - 1) })} className="size-6 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors"><Minus size={14} /></button>
+                    <span className="text-base font-mono font-bold w-4 text-center">{selectedPolygon.rifles}</span>
+                    <button onClick={() => updatePolygon(selectedPolygon.id, { rifles: selectedPolygon.rifles + 1 })} className="size-6 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors"><Plus size={14} /></button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between bg-surface-dark/50 rounded-lg p-2 pr-3 border border-slate-700/50">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-slate-800 p-2 rounded text-primary"><Shield size={20} /></div>
+                    <div className="flex flex-col"><span className="text-sm font-bold text-white">Shotguns</span><span className="text-[10px] text-slate-500">Close Range</span></div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => updatePolygon(selectedPolygon.id, { shotguns: Math.max(0, selectedPolygon.shotguns - 1) })} className="size-6 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors"><Minus size={14} /></button>
+                    <span className="text-base font-mono font-bold w-4 text-center">{selectedPolygon.shotguns}</span>
+                    <button onClick={() => updatePolygon(selectedPolygon.id, { shotguns: selectedPolygon.shotguns + 1 })} className="size-6 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors"><Plus size={14} /></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={runOptimization}
+              disabled={isOptimizing}
+              className="shrink-0 w-full bg-primary hover:bg-primary-dark text-background-dark font-bold py-3 px-4 rounded-lg shadow-[0_0_15px_rgba(13,242,13,0.3)] hover:shadow-[0_0_25px_rgba(13,242,13,0.5)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isOptimizing ? (<><Loader2 size={20} className="animate-spin" />CALCULATING...</>) : (<><PlayCircle size={20} />RUN OPTIMIZATION</>)}
+            </button>
+          </div>
+        </aside>
+      )}
 
       <div className="flex-1"></div>
 
-      {/* Right Sidebar - Named Units Grid + Coverage Analytics */}
-      <aside className={`pointer-events-auto fixed bottom-0 left-0 right-0 md:absolute md:bottom-auto md:left-auto md:right-0 md:top-0 md:w-72 md:m-4 flex flex-col justify-end gap-3 z-[398] md:z-[400] transform transition-all duration-500 ${showAnalytics ? 'md:translate-x-0' : 'md:translate-x-[120%]'} ${showAnalytics && !selectedPolygon ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}`}>
+      {/* Right Sidebar - Named Units Grid + Coverage Analytics (desktop only, mobile uses inline in bottom sheet) */}
+      <aside className={`pointer-events-auto hidden md:flex absolute right-0 top-0 bottom-0 w-72 m-4 flex-col justify-end gap-3 z-[400] transform transition-all duration-500 ${showAnalytics ? 'translate-x-0' : 'translate-x-[120%]'}`}>
         {/* Named Units Grid */}
         {namedUnits.length > 0 && (
           <div className="bg-surface-glass backdrop-blur-xl border border-primary/20 rounded-xl p-4 shadow-2xl">
