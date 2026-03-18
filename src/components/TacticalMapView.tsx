@@ -330,7 +330,8 @@ function getPolygonStatus(poly: PolygonData): 'no-result' | 'result-match' | 're
   if (poly.lastOptimizedParams &&
     (poly.snipers !== poly.lastOptimizedParams.snipers ||
       poly.rifles !== poly.lastOptimizedParams.rifles ||
-      poly.shotguns !== poly.lastOptimizedParams.shotguns)) {
+      poly.shotguns !== poly.lastOptimizedParams.shotguns ||
+      poly.gridRes !== poly.lastOptimizedParams.gridRes)) {
     return 'result-mismatch';
   }
   return 'result-match';
@@ -426,6 +427,7 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
       snipers: 4,
       rifles: 2,
       shotguns: 2,
+      gridRes: 10,
       deployedUnits: [],
       coveragePercent: 0,
       optimizationComplete: false,
@@ -461,7 +463,7 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
         const minLng = Math.min(...poly.points.map(p => p.lng));
         const maxLng = Math.max(...poly.points.map(p => p.lng));
 
-        let gridRes = 10;
+        let gridRes = poly.gridRes;
         let latStep = gridRes / 111320;
         let lngStep = gridRes / (111320 * Math.cos(minLat * Math.PI / 180));
         let estimatedPoints = ((maxLat - minLat) / latStep) * ((maxLng - minLng) / lngStep);
@@ -544,7 +546,7 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
         deployedUnits: finalPositions,
         coveragePercent: finalCoverage,
         optimizationComplete: true,
-        lastOptimizedParams: { snipers: poly.snipers, rifles: poly.rifles, shotguns: poly.shotguns },
+        lastOptimizedParams: { snipers: poly.snipers, rifles: poly.rifles, shotguns: poly.shotguns, gridRes: poly.gridRes },
       });
       setIsOptimizing(false);
     }, 100);
@@ -784,6 +786,25 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
               </div>
             </div>
 
+            <div className="shrink-0 mb-4">
+              <div className="flex justify-between items-end mb-2">
+                <label className="text-xs text-slate-400 font-mono uppercase tracking-wider">Grid Resolution</label>
+                <span className="text-primary font-mono text-xs">{selectedPolygon.gridRes}m</span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="100"
+                value={selectedPolygon.gridRes}
+                onChange={(e) => updatePolygon(selectedPolygon.id, { gridRes: parseInt(e.target.value) })}
+                className="w-full h-2 bg-surface-dark rounded-lg appearance-none cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-slate-600 font-mono mt-1">
+                <span>Precise</span>
+                <span>Coarse</span>
+              </div>
+            </div>
+
             <button
               onClick={runOptimization}
               disabled={isOptimizing}
@@ -910,6 +931,25 @@ export default function TacticalMapView({ scenarioId, polygons: propPolygons, on
                     <button onClick={() => updatePolygon(selectedPolygon.id, { shotguns: selectedPolygon.shotguns + 1 })} className="size-6 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors"><Plus size={14} /></button>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex justify-between items-end mb-2">
+                <label className="text-xs text-slate-400 font-mono uppercase tracking-wider">Grid Resolution</label>
+                <span className="text-primary font-mono text-xs">{selectedPolygon.gridRes}m</span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="100"
+                value={selectedPolygon.gridRes}
+                onChange={(e) => updatePolygon(selectedPolygon.id, { gridRes: parseInt(e.target.value) })}
+                className="w-full h-2 bg-surface-dark rounded-lg appearance-none cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-slate-600 font-mono mt-1">
+                <span>Precise</span>
+                <span>Coarse</span>
               </div>
             </div>
 

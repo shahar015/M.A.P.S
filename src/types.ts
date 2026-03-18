@@ -26,8 +26,9 @@ export interface PolygonData {
   snipers: number;
   rifles: number;
   shotguns: number;
+  gridRes: number;
   deployedUnits: DeployedUnit[];
   coveragePercent: number;
   optimizationComplete: boolean;
-  lastOptimizedParams: { snipers: number; rifles: number; shotguns: number } | null;
+  lastOptimizedParams: { snipers: number; rifles: number; shotguns: number; gridRes: number } | null;
 }
